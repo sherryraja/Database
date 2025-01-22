@@ -1,0 +1,78 @@
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    platform: linux/arm64
+    container_name: mqtt-broker
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    networks:
+      - home_security_network
+    restart: always
+
+  mysql-db:
+    image: mysql:latest
+    platform: linux/arm64
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: home_security
+    ports:
+      - "3306:3306"
+    networks:
+      - home_security_network
+    volumes:
+      - mysql_data:/var/lib/mysql
+    restart: always
+
+  phpmyadmin:
+    image: arm64v8/phpmyadmin
+    platform: linux/arm64
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql-db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: root
+    ports:
+      - "8080:80"
+    networks:
+      - home_security_network
+    depends_on:
+      - mysql-db
+    restart: always
+
+  mongo-db:
+    image: mongo:latest
+    platform: linux/arm64
+    container_name: mongo-db
+    ports:
+      - "27017:27017"
+    networks:
+      - home_security_network
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  neo4j-db:
+    image: neo4j:latest
+    platform: linux/arm64
+    container_name: neo4j-db
+    environment:
+      NEO4J_AUTH: neo4j/password
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    networks:
+      - home_security_network
+    volumes:
+      - neo4j_data:/data
+    restart: always
+
+networks:
+  home_security_network:
+
+volumes:
+  mysql_data:
+  mongo_data:
+  neo4j_data:
